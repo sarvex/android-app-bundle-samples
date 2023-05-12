@@ -112,7 +112,7 @@ def get_sdk_jar_path(args: argparse.Namespace) -> str:
   sdk_ver = args.sdkver
 
   sdk_jar_path = os.path.join(android_sdk_path, "platforms",
-                              "android-" + sdk_ver, "android.jar")
+                              f"android-{sdk_ver}", "android.jar")
   if not os.path.exists(sdk_jar_path):
     print(
         "Cannot find android.jar at {sdk_jar_path}".format(
@@ -268,10 +268,7 @@ def get_asset_pack_type(path: str) -> str:
     return FASTFOLLOW
 
   tags = xmldoc.getElementsByTagName(UPFRONT)
-  if tags.length:
-    return UPFRONT
-
-  return None
+  return UPFRONT if tags.length else None
 
 
 def extract_bundle_config(bundle_folder: str, add_standalone_config: bool,
@@ -322,21 +319,19 @@ def extract_bundle_config(bundle_folder: str, add_standalone_config: bool,
   except KeyError:
     print("No existing split dimensions")
 
-  tcf_split_dimension = {
-      "value": "TEXTURE_COMPRESSION_FORMAT",
-      "negate": False,
-      "suffix_stripping": {
-          "enabled": True,
-          "default_suffix": ""
-      }
-  }
-
-  # Add the TCF split dimension, if needed
   if strip_tcf_suffixes:
+    tcf_split_dimension = {
+        "value": "TEXTURE_COMPRESSION_FORMAT",
+        "negate": False,
+        "suffix_stripping": {
+            "enabled": True,
+            "default_suffix": ""
+        }
+    }
+
     dimensions.append(tcf_split_dimension)
 
 
-  if strip_tcf_suffixes:
     json_format.ParseDict(
         {
             "optimizations": {
@@ -424,8 +419,7 @@ def zip_module(module_folder: str, bundle_folder: str) -> str:
 
   print("  Module {module_folder}".format(module_folder=module_folder))
   basename = os.path.join(bundle_folder, module_folder)
-  module_zip = shutil.make_archive(basename, "zip", root_dir=basename)
-  return module_zip
+  return shutil.make_archive(basename, "zip", root_dir=basename)
 
 
 def build_bundle(module_zip_files: typing.List[str], output_path: str,
@@ -439,9 +433,7 @@ def build_bundle(module_zip_files: typing.List[str], output_path: str,
   ]
 
   for entry in metadata:
-    bundletool_cmd.append("--metadata-file")
-    bundletool_cmd.append(entry)
-
+    bundletool_cmd.extend(("--metadata-file", entry))
   print("Running {bundletool_cmd}".format(bundletool_cmd=bundletool_cmd))
   exit_code = subprocess.call(bundletool_cmd)
 
@@ -507,9 +499,7 @@ def main() -> None:
     ]
 
     for entry in metadata:
-      bundletool_cmd.append("--metadata-file")
-      bundletool_cmd.append(entry)
-
+      bundletool_cmd.extend(("--metadata-file", entry))
     print("Running {bundletool_cmd}".format(bundletool_cmd=bundletool_cmd))
     exit_code = subprocess.call(bundletool_cmd)
 

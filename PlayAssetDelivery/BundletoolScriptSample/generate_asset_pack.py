@@ -125,9 +125,8 @@ def make_manifest(package_name: str, asset_pack_name: str, delivery_mode: str,
     sys.exit(-1)
 
   manifest_file_name = os.path.join(manifest_folder, "AndroidManifest.xml")
-  manifest_file = open(manifest_file_name, "w")
-  print(manifest, file=manifest_file)
-  manifest_file.close()
+  with open(manifest_file_name, "w") as manifest_file:
+    print(manifest, file=manifest_file)
   print("Generated {manifest}".format(manifest=manifest_file_name))
 
 
